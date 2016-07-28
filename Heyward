@@ -3,4 +3,11 @@ library(dplyr, warn.conflicts = FALSE)
 library('DBI')
 library('ggplot2')
 library('pitchRx')
-
+#Scrape PitchRx for Heyward. I only scraped from 2012 on, but data included goes back to 2008.
+atbat16 <- filter(tbl(db, 'atbat'), date >= '2010_01_01' & date <= '2016_07_28')
+explain(atbat16)
+Heyward_J_16 <- filter(atbat16, batter_name == 'Jason Heyward')
+pitches <- tbl(db, 'pitch')
+Heyward16 <- inner_join(pitches, Heyward_J_16, by = c('num', 'gameday_link'))
+Jason_Heyward_16 <- collect(Heyward16)
+summary(Jason_Heyward_16)
