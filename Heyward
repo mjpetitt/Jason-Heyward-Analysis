@@ -11,3 +11,56 @@ pitches <- tbl(db, 'pitch')
 Heyward16 <- inner_join(pitches, Heyward_J_16, by = c('num', 'gameday_link'))
 Jason_Heyward_16 <- collect(Heyward16)
 summary(Jason_Heyward_16)
+
+#Add year column to data
+Jason_Heyward_16$year <- substr(Jason_Heyward_16$gameday_link, 5, 8)
+#Rename master dataset
+Jason_Heyward_Master <- Jason_Heyward_16
+#Filter for year
+Jason_Heyward_12 <- filter(Jason_Heyward_Master, year==2012)
+#Plotting by pitch_type
+Jason_Heyward_12_HR <- filter(Jason_Heyward_12, des=="In play, run(s)", event=="Home Run")
+p <- ggplot(Jason_Heyward_12_HR, aes(px, pz, color = pitch_type)) + facet_wrap(~p_throws)
+p <- p + scale_x_continuous(limits = c(-3,3)) + scale_y_continuous(limits = c(1,5)) + annotate("rect", xmin = -1, xmax = 1, ymin = 1.5, ymax = 3.5, color = "black", alpha = 0) + labs(title = "Jason Heyward 2012 Home Runs") + ylab("Horizontal Location (ft.)") + xlab("Vertical Location (ft): Catcher's View") + labs(color = "Pitch Type")
+p <- p + geom_point(size = 10, alpha = .65)
+p <- p + theme(axis.title = element_text(size = 15, color = "black", face = "bold")) + theme(plot.title = element_text(size = 30, face = "bold", vjust = 1)) + theme(axis.text = element_text(size = 13, face = "bold", color = "black")) + theme(legend.title = element_text(size = 12)) + theme(legend.text = element_text(size = 12))
+#Plotting by velocity
+p <- ggplot(Jason_Heyward_12_HR, aes(px, pz, color = start_speed)) + facet_wrap(~p_throws)
+p <- p + scale_x_continuous(limits = c(-1,1)) + scale_y_continuous(limits = c(0,5)) + annotate("rect", xmin = -0.95, xmax = 0.95, ymin = 1.6, ymax = 3.5, color = "red", lwd = 2) + labs(title = "Jason Heyward 2012 Home Runs") + ylab("Horizontal Location (ft.)") + xlab("Vertical Location (ft): Catcher's View") + labs(color = "Velocity (MPH)")
+p <- p + geom_point()
+p <- p + theme(axis.title = element_text(size = 15, color = "black", face = "bold")) + theme(plot.title = element_text(size = 20, face = "bold", vjust = 1)) + theme(axis.text = element_text(size = 10, face = "bold", color = "black")) + theme(legend.title = element_text(size = 8)) + theme(legend.text = element_text(size = 8))
+
+#Isolating extra base hits within a specific year
+heyward_XB_12 <- filter(Jason_Heyward_12, des=="In play, run(s)" | des=="In play, no out", event== "Home Run" | event=="Triple" | event=="Double")
+
+#Need to figure out how many PAs per year
+first_pitch_swing_12 <- filter(Jason_Heyward_12, count=="0-0")
+#Isolates first pitch swinging for specific year
+first_pitch_swing_12 <- filter(Jason_Heyward_12, count=="0-0", des=="Swinging Strike (Blocked)" | des=="Swinging Strike" | des=="In play, run(s)" | des=="In play, out(s)" | des=="In play, no out" | des=="Foul" | des=="Foul Tip")
+#Filters through dates in season
+Reg_season_13 <- filter(Jason_Heyward_13, date >= "2013_04_01" & date <="2013_09_29")
+
+#Lists out breakout of desired variable
+table(heyward_XB_12$pitch_type)
+count(heyward_XB_12, pitch_type)
+
+#Isolates pitches by count - won't include 0-0 count (this number will be the number of plate appeareances)
+Count_Analysis_12 <- filter(Jason_Heyward_12, count== "0-1" | count=="0-2" | 
+count=="1-0" | count=="1-1" | count=="1-2" | count=="2-0" | count=="2-1" | count=="2-2" | 
+count=="3-0" | count=="3-1" | count=="3-2")
+
+#Plot count analysis as a bar graph via percentage on the y-axis
+p <- ggplot(Count_Analysis_12, aes(x = count)) + geom_bar(aes(y = (..count..)/sum(..count..))) + ylab("%") + scale_y_continuous(labels=percent) + ggtitle("Jason Heyward 2012 % Pitches by Count")
+
+#Updated isolated XBH by pitch speed vs. pitchers handedness
+p <- ggplot(heyward_XB_12, aes(px, pz, color = start_speed)) + facet_wrap(~p_throws)
+p <- p + scale_x_continuous(limits = c(-1,1)) + scale_y_continuous(limits = c(0,5)) + annotate("rect", xmin = -0.95, xmax = 0.95, ymin = 1.6, ymax = 3.5, color = "red", lwd=2, alpha = 0) + labs(title = "Jason Heyward 2012 XBH") + ylab("Horizontal Location (ft.)") + xlab("Vertical Location (ft): Catcher's View") + labs(color = "Velocity (mph)")
+p <- p + geom_point()
+p <- p + theme(axis.title = element_text(size = 10, color = "black", face = "bold")) + theme(plot.title = element_text(size = 18, face = "bold", vjust = 1)) + theme(axis.text = element_text(size = 10, face = "bold", color = "black")) + theme(legend.title = element_text(size = 8)) + theme(legend.text = element_text(size = 8))
+p
+#Isolates exit velocity for specefic year
+p <- ggplot(heyward_statcast_15, aes(px, pz, color = Exit_Velo)) + facet_wrap(~p_throws)
+p <- p + scale_x_continuous(limits = c(-1,1)) + scale_y_continuous(limits = c(0,5)) + annotate("rect", xmin = -0.95, xmax = 0.95, ymin = 1.6, ymax = 3.5, color = "red", lwd=2, alpha = 0) + labs(title = "Jason Heyward 2015 Exit Velo") + ylab("Horizontal Location (ft.)") + xlab("Vertical Location (ft): Catcher's View") + labs(color = "Velocity (mph)")
+p <- p + geom_point()
+p <- p + theme(axis.title = element_text(size = 10, color = "black", face = "bold")) + theme(plot.title = element_text(size = 18, face = "bold", vjust = 1)) + theme(axis.text = element_text(size = 10, face = "bold", color = "black")) + theme(legend.title = element_text(size = 8)) + theme(legend.text = element_text(size = 8))
+p
